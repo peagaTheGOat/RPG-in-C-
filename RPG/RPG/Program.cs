@@ -1,117 +1,136 @@
-Console.WriteLine("Bem vindo ao sistema de RPG!\nInsira o número de integrantes do grupo:\n\n\n" +
-    "Numero de integrantes:");
-int quantidade;
-while (!int.TryParse(Console.ReadLine(), out quantidade) || quantidade <= 0)
-{
-    Console.WriteLine("Entrada inválida. Informe um número inteiro maior que zero para o tamanho do grupo:");
-}
+using RPG;
+using System;
+using System.IO;
+using System.Collections.Generic;
 
-string[] itens = new string[quantidade];
-for (int i = 0; i < quantidade; i++)
-{
-    Console.Write($"Digite o nome do {i + 1} jogador: ");
-    itens[i] = Console.ReadLine() ?? string.Empty;
-}
+DadosRPG gerenciador = new DadosRPG();
+string caminhoArquivo = "dados_personagens.json";
 
-Console.WriteLine("Jogadores Adicionados:");
-foreach (string item in itens)
+Console.WriteLine("Bem vindo ao sistema de RPG!\nDeseja carregar os dados salvos? (S/N)?");
+DadosRPG[] personagens;
+
+if (Console.ReadLine()?.ToUpper() == "S" && File.Exists(caminhoArquivo))
 {
-    Console.WriteLine("--" + item);
+    personagens = gerenciador.CarregarDados(caminhoArquivo);
+    Console.WriteLine("Dados carregados com sucesso!");
 }
-Console.WriteLine("Agora que já temos os nossos jogadores vamos adicionar pontos mana e de saúde\n");
-int[] pontosMana = new int[quantidade];
-for (int i = 0; i < quantidade; i++)
+else
 {
-    Console.Write($"Digite o total de pontos de mana do personagem {itens[i]}:");
-    while (!int.TryParse(Console.ReadLine(), out pontosMana[i]) || pontosMana[i] <= 0)
+    Console.WriteLine("Quantos participarão da aventura?");
+    int quantidade;
+    while (!int.TryParse(Console.ReadLine(), out quantidade) || quantidade <= 0)
     {
-        Console.WriteLine("Entrada inválida. Informe um número inteiro maior ou igual a zero para os pontos de mana:");
+        Console.WriteLine("Assim não da");
     }
-}
-int[] pontosSaude = new int[quantidade];
-for (int i = 0; i < quantidade; i++)
-{
-    Console.Write($"Digite o total de pontos de saúde do personagem {itens[i]}:");
-    while (!int.TryParse(Console.ReadLine(), out pontosSaude[i]) || pontosSaude[i] <= 0)
+    personagens = new DadosRPG[quantidade];
+
+    for (int i = 0; i < quantidade; i++)
     {
-        Console.WriteLine("Informe um número inteiro maior ou igual a zero para os pontos de saúde:");
+        personagens[i] = new DadosRPG();
+        Console.Write($"Digite o nome do {i + 1} jogador: ");
+        personagens[i].Nome = Console.ReadLine() ?? string.Empty;
     }
-}
-Console.WriteLine($"Perfeito! Vamos recapitular rapidamente.\n\n" +
-    $"Nessa sessão temos um grupo de {quantidade} composto por:");
-foreach (string jogador in itens)
-{
-    int indice = Array.IndexOf(itens, jogador);
-    Console.WriteLine($"- {jogador} ---Mana: {pontosMana[indice]} ---Saúde: {pontosSaude[indice]}");
-}
-Console.WriteLine("S = sim , N = não");
-switch(Console.ReadLine()?.ToUpper())
-{
-    case "S":
-        Console.WriteLine("Perfeito! Continuando...\n");
-        break;
-    case "N":
-        Console.WriteLine("Eita... Reinicia o sistema e preenche direito");
-        return;
-    default:
-        Console.WriteLine("Não é possível que vc conseguiu clicar errado...");
-        break;
-}
-//Edição de vida e mana
-Console.WriteLine("Agora que já configuramos os dados dos nossos personagens. Que comece a aventura!!\n\n\n\n\n");
-Console.WriteLine("Deseja fazer alguma alteração de vida ou mana?");
-Console.WriteLine("S = sim , N = não");
-while (true)
-{
+
+    Console.WriteLine("Jogadores Adicionados:");
+    foreach (var item in personagens)
+    {
+        Console.WriteLine("--" + item.Nome);
+    }
+    Console.WriteLine("Agora que já temos os nossos jogadores vamos adicionar pontos mana e de saúde\n");
+
+    for (int i = 0; i < quantidade; i++)
+    {
+        Console.Write($"Digite o total de pontos de mana do personagem {personagens[i].Nome}:");
+        if (int.TryParse(Console.ReadLine(), out int mana))
+        {
+            personagens[i].PontosMana = mana;
+        }
+    }
+
+    for (int i = 0; i < quantidade; i++)
+    {
+        Console.Write($"Digite o total de pontos de saúde do personagem {personagens[i].Nome}:");
+        if (int.TryParse(Console.ReadLine(), out int saude))
+        {
+            personagens[i].PontosSaude = saude;
+        }
+    }
+    Console.WriteLine($"Perfeito! Vamos recapitular rapidamente.\n\n" +
+        $"Nessa sessão temos um grupo de {quantidade} composto por:");
+    foreach (var jogador in personagens)
+    {
+        int indice = Array.IndexOf(personagens, jogador);
+        Console.WriteLine($"- {jogador.Nome} ---Mana: {jogador.PontosMana} ---Saúde: {jogador.PontosSaude}");
+    }
+    Console.WriteLine("S = sim , N = não");
     switch (Console.ReadLine()?.ToUpper())
     {
         case "S":
-            Console.WriteLine("Qual personagem deseja alterar os pontos?");
-            string nomePersonagem = Console.ReadLine() ?? string.Empty;
-            int indicePersonagem = Array.IndexOf(itens, nomePersonagem);
-            if (indicePersonagem == -1)
-            {
-                Console.WriteLine("Personagem não encontrado. Insira um personagem válido");
-                continue;
-            }
-            Console.WriteLine("Deseja alterar pontos de Mana ou Saúde? (M/S)"); 
-            string tipoPonto = Console.ReadLine()?.ToUpper() ?? string.Empty;
-            if (tipoPonto != "M" && tipoPonto != "S")
-            {
-                Console.WriteLine("Tipo inválido");
-                continue;
-            }
-            Console.WriteLine("Digite o novo valor:");
-            int novoValor;
-            if (!int.TryParse(Console.ReadLine(), out novoValor) || novoValor < 0)
-            {
-                Console.WriteLine("Valor inválido. Tente novamente");
-                continue;
-            }
-            if (tipoPonto == "M")
-            {
-                pontosMana[indicePersonagem] = novoValor;
-                Console.WriteLine($"Pontos de Mana de {nomePersonagem} atualizados para {novoValor} " +
-                    $"Digite 'N' para ver as mudanças e S para mais adições" );
-            }
-            else
-            {
-                pontosSaude[indicePersonagem] = novoValor;
-                Console.WriteLine($"Pontos de Saúde de {nomePersonagem} atualizados para {novoValor} " +
-                    $"Digite 'N' para ver as mudanças e 'S' para mais edições");
-            } 
+            Console.WriteLine("Perfeito! Continuando...\n");
             break;
         case "N":
-            foreach (string jogador in itens)
-            {
-                int indice = Array.IndexOf(itens, jogador);
-                Console.WriteLine($"- {jogador} --- Mana: {pontosMana[indice]} --- Saúde: {pontosSaude[indice]}");
-            }
-            Console.WriteLine("Encerrando alterações. Os pontos de Mana e de Saude dos personagens foram atualizados\n" +
-                "Deseja fazer mais alterações? S = sim , N = não");
-            break;
+            Console.WriteLine("Eita... Reinicia o sistema e preenche direito");
+            return;
         default:
-            Console.WriteLine("Digite S para sim ou N para não");
+            Console.WriteLine("Não é possível que vc conseguiu clicar errado...");
             break;
+    }
+}
+Console.WriteLine("Agora que já configuramos os dados dos nossos personagens. Que comece a aventura!!\n\n\n\n\n");
+Console.WriteLine("Deseja fazer alguma alteração de vida ou mana?");
+Console.WriteLine("S = sim , N = não");
+
+while (true)
+{
+    Console.WriteLine("\nDeseja fazer alguma alteração (S), Ver status (V), Salvar progresso (G) ou Encerrar (E)?");
+    string opcao = Console.ReadLine()?.ToUpper() ?? "";
+
+    if (opcao == "E") return;
+
+    switch (opcao)
+    {
+        case "S":
+            Console.WriteLine("Qual personagem deseja alterar?");
+            string nomeBusca = Console.ReadLine() ?? "";
+            var p = Array.Find(personagens, x => x.Nome.Equals(nomeBusca, StringComparison.OrdinalIgnoreCase));
+
+            if (p == null)
+            {
+                Console.WriteLine("Não encontramos o seu personagem...");
+                continue;
+            }
+
+            Console.WriteLine("Alterar (M)ana ou (S)aúde?");
+            string tipo = Console.ReadLine()?.ToUpper() ?? "";
+
+            Console.WriteLine("Digite o novo valor:");
+            if (int.TryParse(Console.ReadLine(), out int novoValor) && novoValor >= 0)
+            {
+                if (tipo == "M") p.PontosMana = novoValor;
+                else if (tipo == "S") p.PontosSaude = novoValor;
+                Console.WriteLine("Os pontos foram atualizados com sucesso!!");
+            }
+            break;
+
+        case "V":
+            ExibirStatus(personagens);
+            break;
+
+        case "G":
+            gerenciador.SalvarDados(personagens, caminhoArquivo);
+            Console.WriteLine(">>>> Dados salvos no arquivo local com sucesso! <<<<");
+            break;
+
+        default:
+            Console.WriteLine("O que vc quer fazer?");
+            break;
+    }
+}
+void ExibirStatus(DadosRPG[] lista)
+{
+    Console.WriteLine("\n--- STATUS ATUAL DO GRUPO ---");
+    foreach (var p in lista)
+    {
+        Console.WriteLine($"- {p.Nome} | Mana: {p.PontosMana} | Saúde: {p.PontosSaude}");
     }
 }
